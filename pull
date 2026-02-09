@@ -1,0 +1,37 @@
+#!/usr/bin/bash
+umask 077
+set -euo pipefail
+
+# Récupération de l'utilisateur courant
+CURRENT_USER=$(whoami)
+
+# Extraction du nom du projet (retire l'espace après =)
+PROJECT_NAME=$(echo "$CURRENT_USER" | grep -oP '^lx-\K.*' || echo "")
+
+# Vérification que le nom du projet a bien été trouvé
+if [[ -z "$PROJECT_NAME" ]]; then
+    echo "Erreur: Le nom d'utilisateur ne commence pas par 'lx-'" >&2
+    exit 1
+fi
+
+# Construction du chemin du projet
+PROJECT_DIR="/home/$CURRENT_USER/$PROJECT_NAME"
+
+# Vérification que le répertoire existe
+if [[ ! -d "$PROJECT_DIR" ]]; then
+    echo "Erreur: Le répertoire $PROJECT_DIR n'existe pas" >&2
+    exit 1
+fi
+
+# Vérification que c'est bien un dépôt git
+if [[ ! -d "$PROJECT_DIR/.git" ]]; then
+    echo "Erreur: $PROJECT_DIR n'est pas un dépôt git" >&2
+    exit 1
+fi
+
+# Changement de répertoire et git pull
+cd "$PROJECT_DIR"
+echo "Mise à jour du projet dans $PROJECT_DIR..."
+git pull
+
+exit 0

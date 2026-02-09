@@ -1,0 +1,81 @@
+#!/usr/bin/bash
+umask 077
+set -euo pipefail
+
+# Récupération de l'utilisateur courant
+CURRENT_USER=$(whoami)
+
+# Extraction du nom du projet
+PROJECT_NAME=$(echo "$CURRENT_USER" | grep -oP '^lx-\K.*' || echo "")
+
+# Vérification que le nom du projet a bien été trouvé
+if [[ -z "$PROJECT_NAME" ]]; then
+    echo "Erreur: Le nom d'utilisateur ne commence pas par 'lx-'" >&2
+    exit 1
+fi
+
+# Construction du chemin du projet
+PROJECT_DIR="/home/$CURRENT_USER/$PROJECT_NAME"
+
+# Vérification que le répertoire existe
+if [[ ! -d "$PROJECT_DIR" ]]; then
+    echo "Erreur: Le répertoire $PROJECT_DIR n'existe pas" >&2
+    exit 1
+fi
+
+# Vérification que npm est installé
+if ! command -v npm &> /dev/null; then
+    echo "Erreur: npm n'est pas installé" >&2
+    exit 1
+fi
+
+# Vérification que pm2 est installé
+if ! command -v pm2 &> /dev/null; then
+    echo "Erreur: pm2 n'est pas installé" >&2
+    exit 1
+fi
+
+# Vérification que ecosystem.config.js existe
+if [[ ! -f "$PROJECT_DIR/ecosystem.config.js" ]]; then
+    echo "Erreur: ecosystem.config.js n'existe pas dans $PROJECT_DIR" >&2
+    exit 1
+fi
+
+# Changement de répertoire
+cd "$PROJECT_DIR"
+echo "Déploiement du projet dans $PROJECT_DIR..."
+
+# Installation des dépendances
+echo "Installation des dépendances npm..."
+npm install --production
+
+# Build du projet (correction: npm run build)
+echo "Build du projet..."
+npm run build
+
+# Arrêt des processus PM2 existants pour ce projet (si présents)
+echo "Vérification des processus PM2 existants..."
+pm2 delete all 2>/dev/null || true
+
+# Démarrage de l'application avec PM2
+echo "Démarrage de l'application avec PM2..."
+pm2 start ecosystem.config.js
+
+# Sauvegarde de la configuration PM2
+echo "Sauvegarde de la configuration PM2..."
+pm2 save
+
+# Affichage du statut
+echo ""
+echo "✅ Déploiement terminé avec succès !"
+echo ""
+pm2 status
+
+echo ""
+echo "📋 Commandes utiles :"
+echo "  - Voir les logs : pm2 logs"
+echo "  - Redémarrer : pm2 restart all"
+echo "  - Statut : pm2 status"
+echo "  - Monitoring : pm2 monit"
+
+exit 0
