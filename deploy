@@ -71,11 +71,4 @@ echo "✅ Déploiement terminé avec succès !"
 echo ""
 pm2 status
 
-echo ""
-echo "📋 Commandes utiles :"
-echo "  - Voir les logs : pm2 logs"
-echo "  - Redémarrer : pm2 restart all"
-echo "  - Statut : pm2 status"
-echo "  - Monitoring : pm2 monit"
-
 exit 0
