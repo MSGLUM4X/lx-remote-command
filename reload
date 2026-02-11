@@ -1,0 +1,23 @@
+#!/usr/bin/bash
+umask 077
+set -euo pipefail
+
+
+# Vérification que pm2 est installé
+if ! command -v pm2 &> /dev/null; then
+    echo "Erreur: pm2 n'est pas installé" >&2
+    exit 1
+fi
+
+# Reload de l'application avec PM2, Restart si echec
+echo "Reload de l'application avec PM2..."
+pm2 reload ecosystem.config.js
+
+
+# Affichage du statut
+echo ""
+echo "✅ Déploiement terminé avec succès !"
+echo ""
+pm2 status
+
+exit 0
