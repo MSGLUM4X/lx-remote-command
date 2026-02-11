@@ -12,11 +12,19 @@ Effectue un `git pull` dans le répertoire du service afin de récupérer les de
 
 ---
 
-### `deploy`
+### `start`
 
-Redéploie une application **Node.js** en utilisant **PM2**.
+Déploie une application **Node.js** en utilisant **PM2**.
+A utiliser pour le premier déploiement.
 
 ---
+
+### `Reload`
+
+Redéploie une application **Node.js** en utilisant **PM2**. 
+A utiliser pour les déploiements après avoir effectué le premier déploiement    avec start.
+---
+
 
 ## Activation des commandes
 

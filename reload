@@ -2,6 +2,32 @@
 umask 077
 set -euo pipefail
 
+# Récupération de l'utilisateur courant
+CURRENT_USER=$(whoami)
+
+# Extraction du nom du projet
+PROJECT_NAME=$(echo "$CURRENT_USER" | grep -oP '^lx-\K.*' || echo "")
+
+# Vérification que le nom du projet a bien été trouvé
+if [[ -z "$PROJECT_NAME" ]]; then
+    echo "Erreur: Le nom d'utilisateur ne commence pas par 'lx-'" >&2
+    exit 1
+fi
+
+# Construction du chemin du projet
+PROJECT_DIR="/home/$CURRENT_USER/$PROJECT_NAME"
+
+# Vérification que le répertoire existe
+if [[ ! -d "$PROJECT_DIR" ]]; then
+    echo "Erreur: Le répertoire $PROJECT_DIR n'existe pas" >&2
+    exit 1
+fi
+
+# Vérification que npm est installé
+if ! command -v npm &> /dev/null; then
+    echo "Erreur: npm n'est pas installé" >&2
+    exit 1
+fi
 
 # Vérification que pm2 est installé
 if ! command -v pm2 &> /dev/null; then
@@ -9,10 +35,27 @@ if ! command -v pm2 &> /dev/null; then
     exit 1
 fi
 
-# Reload de l'application avec PM2, Restart si echec
-echo "Reload de l'application avec PM2..."
-pm2 reload ecosystem.config.js
+# Vérification que ecosystem.config.js existe
+if [[ ! -f "$PROJECT_DIR/ecosystem.config.js" ]]; then
+    echo "Erreur: ecosystem.config.js n'existe pas dans $PROJECT_DIR" >&2
+    exit 1
+fi
 
+# Changement de répertoire
+cd "$PROJECT_DIR"
+echo "Déploiement du projet dans $PROJECT_DIR..."
+
+# Installation des dépendances
+echo "Installation des dépendances npm..."
+npm install --production
+
+# Build du projet (correction: npm run build)
+echo "Build du projet..."
+npm run build
+
+# Reload de l'application avec PM2
+echo "Reload de l'application avec PM2..."
+pm2 reload 0
 
 # Affichage du statut
 echo ""
