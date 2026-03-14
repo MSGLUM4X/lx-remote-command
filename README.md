@@ -4,6 +4,13 @@ Ce dépôt contient des **commandes distantes** utilisables par `lx` pour le dé
 
 ---
 
+## Ecriture des commandes
+
+Pour aller plus vite
+```bash
+cp -p default nom_cmd
+```
+
 ## Commandes disponibles
 
 ### `pull`
@@ -44,5 +51,6 @@ Sans cette étape, la commande sera ignorée, même si le script existe.
 * Les commandes sont exécutées dans un **shell restreint**
 * Seules les commandes listées dans `commands_enabled` sont autorisées
 * Chaque commande peut être chaînée via GitHub Actions (`[cmd:pull][cmd:deploy]`)
+
 
 
